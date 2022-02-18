@@ -1,3 +1,4 @@
+from re import search
 from dotenv import dotenv_values
 from random import choice
 import urllib.parse
@@ -14,41 +15,45 @@ def randomCity():
         data = json.loads(r.read())
         rand_city = choice(data)
         
-        randomCity.city = str(rand_city['city']).replace('"', '')
-        print(f"\n{randomCity.city}'s population is {rand_city['population']}\n")
+        city = str(rand_city['city']).replace('"', '')
+        print(f"\n{city}'s population is {rand_city['population']}\n")
         print(f"Country: {rand_city['country']}\n\nState/Region/Province: {rand_city['admin_name']}")
+        
+        return city 
 
-def searchCity():
+def searchCity(city):
     geo_url = 'https://api.opencagedata.com/geocode/v1/json'
     params = {
-        'q': randomCity.city,
+        'q': city,
         'key': OPENCAGEDATA_API_KEY
     }
     r = requests.get(geo_url, params=params)
     res = json.loads(r.text)
     
-    searchCity.lat = res['results'][0]['geometry']['lat']
-    searchCity.lon = res['results'][0]['geometry']['lng']
+    lat = res['results'][0]['geometry']['lat']
+    lon = res['results'][0]['geometry']['lng']
     
     with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
         json.dump(res, f, ensure_ascii=False, indent=4)
+        
+    return lat, lon
 
-def showMap():
+def showMap(lat, lon):
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
         'style': 'osm-bright',
         'width': '1920',  
         'height': '1080',
-        'center': f'lonlat:{searchCity.lon},{searchCity.lat}',
+        'center': f'lonlat:{lon},{lat}',
         'zoom': '6.5',
-        'marker': f'lonlat:{searchCity.lon},{searchCity.lat};color:#ff0000;size:medium',
+        'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
         'apiKey': GEOAPIFY_API_KEY
     }    
     full_url = f'{url}{urllib.parse.urlencode(params)}'
     webbrowser.open(full_url)
     
 if __name__ == '__main__':
-    randomCity()
-    searchCity()
-    showMap()
+    city = randomCity()
+    lat, lon = searchCity(city)
+    showMap(lat, lon)
         
