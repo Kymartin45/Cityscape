@@ -34,7 +34,7 @@ def getCityCoordinatesByName(cityName):
     
     with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
         json.dump(res, f, ensure_ascii=False, indent=4)
-        
+    
     return (lon, lat)
 
 def getRandomCity():
@@ -45,8 +45,8 @@ def getRandomCity():
         'coordinates': cityCoords,
     }
 
-def showMap(city):
-    (cityLon, cityLat) = city.coordinates
+def showMap(cityCoords):
+    cityLon, cityLat = cityCoords['coordinates'][0], cityCoords['coordinates'][1]
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
         'style': 'osm-bright',
