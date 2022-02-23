@@ -9,15 +9,17 @@ config = dotenv_values('.env')
 OPENCAGEDATA_API_KEY = config.get('OPENCAGEDATA_API_KEY')
 GEOAPIFY_API_KEY = config.get('GEOAPIFY_API_KEY')
 
+class City:
+    def __init__(self, name, coords):
+        self.name = name 
+        self.coords = coords 
+
 def getRandomCityName():
     with open('city_data/worldCities.json', 'r', encoding='UTF-8') as r:
         data = json.loads(r.read())
         rand_city = choice(data)
         
         city = str(rand_city['city']).replace('"', '')
-        print(f"\n{city}'s population is {rand_city['population']}\n")
-        print(f"Country: {rand_city['country']}\n\nState/Region/Province: {rand_city['admin_name']}")
-        
         return city 
 
 def getCityCoordinatesByName(cityName):
@@ -32,29 +34,32 @@ def getCityCoordinatesByName(cityName):
     lat = res['lat']
     lon = res['lng']
     
-    with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
-        json.dump(res, f, ensure_ascii=False, indent=4)
-    
+    # with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
+    #     json.dump(res, f, ensure_ascii=False, indent=4)
     return (lon, lat)
 
 def getRandomCity():
     cityName = getRandomCityName()
     cityCoords = getCityCoordinatesByName(cityName)
+    cityObj = City(cityName, cityCoords)
+    print(f'{cityObj.name} : {cityObj.coords}')
+    
     return {
-        'name': cityName,
-        'coordinates': cityCoords,
+        'name': cityObj.name,
+        'coordinates': cityObj.coords,
     }
 
-def showMap(cityCoords):
-    cityLon, cityLat = cityCoords['coordinates'][0], cityCoords['coordinates'][1]
+def showMap(cityObj):
+    city = { 'coordinates': cityObj['coordinates'] }
+    lon, lat = city.get('coordinates')
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
         'style': 'osm-bright',
         'width': '1920',  
         'height': '1080',
-        'center': f'lonlat:{cityLon},{cityLat}',
+        'center': f'lonlat:{lon},{lat}',
         'zoom': '6.5',
-        'marker': f'lonlat:{cityLon},{cityLat};color:#ff0000;size:medium',
+        'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
         'apiKey': GEOAPIFY_API_KEY
     }    
     full_url = f'{url}{urllib.parse.urlencode(params)}'
@@ -66,4 +71,5 @@ if __name__ == '__main__':
     city3 = getRandomCity()
     city4 = getRandomCity()
     showMap(city1)
-        
+    print(f'\nLoading {city1["name"]}!')
+    
