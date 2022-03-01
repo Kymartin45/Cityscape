@@ -1,8 +1,7 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from dotenv import dotenv_values
 from random import choice
 import urllib.parse
-import webbrowser
 import requests
 import json
 import os
@@ -67,21 +66,24 @@ def showMap(city):
         'apiKey': GEOAPIFY_API_KEY
     }    
     fullUrl = f'{url}{urllib.parse.urlencode(params)}'
-    webbrowser.open(fullUrl)
-    return fullUrl
     
-@app.route('/', methods=['GET','POST'])
+    return fullUrl
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    guessCity = request.args.get('submit-city-guess')
-    return render_template('index.html', test=guessCity)
+    cityName = getRandomCityName(POPULATION_THRESHHOLD)
+    cityCoords = getCityCoordinatesByName(cityName)
+    city = City(cityName, cityCoords)
+    mapOfCity = showMap(city)
+    
+    return render_template('index.html', mapOfCity=mapOfCity)
     
 if __name__ == '__main__':
-    city1 = getRandomCity()
-    showMap(city1)
     app.secret_key = os.urandom(24)
     app.run(debug=True, port=8000)
+    # city1 = getRandomCity()
     # city2 = getRandomCity()
     # city3 = getRandomCity()
     # city4 = getRandomCity()
-    # print(f'\nLoading {city1["name"]}!')
+    # showMap(city1)
     

@@ -18,7 +18,8 @@
         <div id="home-content" class="home-content">
             <h1>Cityscape</h1>
             <div class="my-map">
-                <form action="{{ url_for('index') }}" method="post">
+                <img src="{{ mapOfCity }}">
+                <form action="" method="post">
                     <input type="search" placeholder="City" name="submit-city-guess">
                     <button class="btn btn-primary" type="submit">Submit</button>
                 </form>
