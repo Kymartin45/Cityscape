@@ -1,44 +1,60 @@
-from re import search
+from flask import Flask, render_template
 from dotenv import dotenv_values
 from random import choice
 import urllib.parse
-import webbrowser
 import requests
 import json
+import os
+
+app = Flask(__name__)
 
 config = dotenv_values('.env')
 OPENCAGEDATA_API_KEY = config.get('OPENCAGEDATA_API_KEY')
 GEOAPIFY_API_KEY = config.get('GEOAPIFY_API_KEY')
 
-def randomCity():
+POPULATION_THRESHHOLD = 400000
+
+class City:
+    def __init__(self, name, coords):
+        self.name = name 
+        self.coords = coords 
+
+def getRandomCityName(populationThreshold):
     with open('city_data/worldCities.json', 'r', encoding='UTF-8') as r:
-        data = json.loads(r.read())
-        rand_city = choice(data)
+        cities = json.loads(r.read())
+        nonEmptyPopulation = list(filter(lambda city: (city['population'] != ""), cities))
+        filteredCities = list(filter(lambda city: (city['population'] > populationThreshold), nonEmptyPopulation))
+        randCity = choice(filteredCities)
         
-        city = str(rand_city['city']).replace('"', '')
-        print(f"\n{city}'s population is {rand_city['population']}\n")
-        print(f"Country: {rand_city['country']}\n\nState/Region/Province: {rand_city['admin_name']}")
-        
+        city = str(randCity['city']).replace('"', '')
         return city 
 
-def searchCity(city):
-    geo_url = 'https://api.opencagedata.com/geocode/v1/json'
+def getCityCoordinatesByName(cityName):
+    geoUrl = 'https://api.opencagedata.com/geocode/v1/json'
     params = {
-        'q': city,
+        'q': cityName,
         'key': OPENCAGEDATA_API_KEY
     }
-    r = requests.get(geo_url, params=params)
-    res = json.loads(r.text)
+    r = requests.get(geoUrl, params=params)
+    res = json.loads(r.text)['results'][0]['geometry']
     
-    lat = res['results'][0]['geometry']['lat']
-    lon = res['results'][0]['geometry']['lng']
+    lat = res['lat']
+    lon = res['lng']
     
-    with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
-        json.dump(res, f, ensure_ascii=False, indent=4)
-        
-    return lat, lon
+    # with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
+    #     json.dump(res, f, ensure_ascii=False, indent=4)
+    return (lon, lat)
 
-def showMap(lat, lon):
+def getRandomCity():
+    cityName = getRandomCityName(POPULATION_THRESHHOLD)
+    cityCoords = getCityCoordinatesByName(cityName)
+    city = City(cityName, cityCoords)
+    print(f'{city.name} : {city.coords}')
+    
+    return city 
+
+def showMap(city):
+    lon, lat = city.coords
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
         'style': 'osm-bright',
@@ -49,11 +65,25 @@ def showMap(lat, lon):
         'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
         'apiKey': GEOAPIFY_API_KEY
     }    
-    full_url = f'{url}{urllib.parse.urlencode(params)}'
-    webbrowser.open(full_url)
+    fullUrl = f'{url}{urllib.parse.urlencode(params)}'
+    
+    return fullUrl
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    cityName = getRandomCityName(POPULATION_THRESHHOLD)
+    cityCoords = getCityCoordinatesByName(cityName)
+    city = City(cityName, cityCoords)
+    mapOfCity = showMap(city)
+    
+    return render_template('index.html', mapOfCity=mapOfCity)
     
 if __name__ == '__main__':
-    city = randomCity()
-    lat, lon = searchCity(city)
-    showMap(lat, lon)
-        
+    app.secret_key = os.urandom(24)
+    app.run(debug=True, port=8000)
+    # city1 = getRandomCity()
+    # city2 = getRandomCity()
+    # city3 = getRandomCity()
+    # city4 = getRandomCity()
+    # showMap(city1)
+    
