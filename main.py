@@ -4,13 +4,13 @@ from random import choice
 import urllib.parse
 import requests
 import json
-import os
 
 app = Flask(__name__)
 
 config = dotenv_values('.env')
 OPENCAGEDATA_API_KEY = config.get('OPENCAGEDATA_API_KEY')
 GEOAPIFY_API_KEY = config.get('GEOAPIFY_API_KEY')
+SECRET_KEY = config.get('SECRET_KEY')
 
 POPULATION_THRESHHOLD = 400000
 
@@ -41,8 +41,6 @@ def getCityCoordinatesByName(cityName):
     lat = res['lat']
     lon = res['lng']
     
-    # with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
-    #     json.dump(res, f, ensure_ascii=False, indent=4)
     return (lon, lat)
 
 def getRandomCity():
@@ -71,19 +69,11 @@ def showMap(city):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    cityName = getRandomCityName(POPULATION_THRESHHOLD)
-    cityCoords = getCityCoordinatesByName(cityName)
-    city = City(cityName, cityCoords)
+    city = getRandomCity()
     mapOfCity = showMap(city)
-    
     return render_template('index.html', mapOfCity=mapOfCity)
     
 if __name__ == '__main__':
-    app.secret_key = os.urandom(24)
+    app.secret_key = SECRET_KEY
     app.run(debug=True, port=8000)
-    # city1 = getRandomCity()
-    # city2 = getRandomCity()
-    # city3 = getRandomCity()
-    # city4 = getRandomCity()
-    # showMap(city1)
     
