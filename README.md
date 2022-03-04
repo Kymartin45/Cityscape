@@ -8,7 +8,7 @@ Test your knowledge of worldwide cities
 ### Installation (Python 3+)
 ---
 
-*Built on 3.10.1*
+*Built on 3.10.2*
 
 **Setting up a virtual environment**
 
