@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from dotenv import dotenv_values
+from db import connectDb
 from random import choice
 import urllib.parse
 import requests
@@ -12,7 +13,7 @@ OPENCAGEDATA_API_KEY = config.get('OPENCAGEDATA_API_KEY')
 GEOAPIFY_API_KEY = config.get('GEOAPIFY_API_KEY')
 SECRET_KEY = config.get('SECRET_KEY')
 
-POPULATION_THRESHHOLD = 400000
+POPULATION_THRESHHOLD = 1000000
 
 class City:
     def __init__(self, name, coords):
@@ -20,14 +21,9 @@ class City:
         self.coords = coords 
 
 def getRandomCityName(populationThreshold):
-    with open('city_data/worldCities.json', 'r', encoding='UTF-8') as r:
-        cities = json.loads(r.read())
-        nonEmptyPopulation = list(filter(lambda city: (city['population'] != ""), cities))
-        filteredCities = list(filter(lambda city: (city['population'] > populationThreshold), nonEmptyPopulation))
-        randCity = choice(filteredCities)
-        
-        city = str(randCity['city']).replace('"', '')
-        return city 
+    filteredCities = connectDb.filteredCitiesByPopulation(populationThreshold)
+    city = choice(filteredCities)
+    return city
 
 def getCityCoordinatesByName(cityName):
     geoUrl = 'https://api.opencagedata.com/geocode/v1/json'
