@@ -14,12 +14,12 @@
             <p><strong>{{ errorMessage }}</strong></p>
             {% endif %}
         {% endwith %}
-        <div id="home-content" class="home-content">
+        <div class="home-content">
             <h1>Cityscape</h1>
             <div class="my-map">
                 <img src="{{ mapOfCity }}">
-                <form action="" method="post">
-                    <input type="search" placeholder="City" name="submit-city-guess">
+                <form action="" method="POST">
+                    <input type="search" placeholder="Country" name="submit-guess">
                     <button class="btn btn-primary" type="submit">Submit</button>
                 </form>
             </div>
