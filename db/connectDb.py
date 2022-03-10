@@ -1,6 +1,7 @@
-from main import POPULATION_THRESHHOLD
+from main import POPULATION_THRESHHOLD, CityInfo
 from dotenv import dotenv_values
-import psycopg2
+import psycopg2.extras
+
 
 config = dotenv_values('.env')
 POSTGRESQL_PASSWORD = config.get('POSTGRESQL_PASSWORD')
@@ -15,18 +16,24 @@ CONN = psycopg2.connect(
 )
 
 def getCitiesByPopulation(populationThreshold):
-    cur = CONN.cursor()
+    cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     cur.execute(''' 
-                    SELECT city, country FROM worldwidecities
+                    SELECT city, country, lng, lat FROM worldwidecities
                     WHERE population >= %s
-                    ORDER BY random() LIMIT 1;  ''', [populationThreshold])
+                    ORDER BY random() LIMIT 1;  
+                ''', [populationThreshold])
 
-    cityAndCountry = list(cur.fetchall())
+    city = cur.fetchall()
+    for row in city:
+        city, country, lng, lat = row['city'], row['country'], row['lng'], row['lat']
+    
+    cityInfo = CityInfo(city, (lng, lat), country)
+        
     CONN.commit()
     CONN.close()
 
-    return cityAndCountry
+    return cityInfo
 
 if __name__ == '__main__':
     getCitiesByPopulation(POPULATION_THRESHHOLD)
