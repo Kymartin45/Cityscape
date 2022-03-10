@@ -14,7 +14,7 @@ SECRET_KEY = config.get('SECRET_KEY')
 
 POPULATION_THRESHHOLD = 1000000
 
-class City:
+class CityInfo:
     def __init__(self, name, coords, country):
         self.name = name 
         self.coords = coords 
@@ -23,7 +23,7 @@ class City:
 def getRandomCityName(populationThreshold):
     city = connectDb.getCitiesByPopulation(populationThreshold)
 
-    return city[0]
+    return city
 
 def getCityCoordinatesByName(cityName):
     geoUrl = 'https://api.opencagedata.com/geocode/v1/json'
@@ -40,15 +40,13 @@ def getCityCoordinatesByName(cityName):
     return (lon, lat)
 
 def getRandomCity():
-    cityName, cityCountry = getRandomCityName(POPULATION_THRESHHOLD)
-    cityCoords = getCityCoordinatesByName(cityName)
-    city = City(cityName, cityCoords, cityCountry)
-    print(f'{city.name}, {city.country} : {city.coords}')
+    cityInfo = getRandomCityName(POPULATION_THRESHHOLD)
+    print(f'{cityInfo.name} : {cityInfo.coords} : {cityInfo.country}')
     
-    return city 
+    return cityInfo
 
-def showMap(city):
-    lon, lat = city.coords
+def showMap(cityInfo):
+    lon, lat = cityInfo.coords
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
         'style': 'osm-bright',
@@ -64,18 +62,18 @@ def showMap(city):
     
     return fullUrl
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     city = getRandomCity()
     mapOfCity = showMap(city)
+    correctAnswer = city.country
 
-    return render_template('index.html', mapOfCity=mapOfCity)
+    if request.method == 'POST':
+        attempt = request.get_json()
+        userGuess = attempt.get('attempt')
+        return userGuess
 
-@app.route('/', methods=['GET', 'POST'])
-def checkGuess(userGuess=None):
-    userGuess = request.form['submit-guess'].title()
-
-    return userGuess
+    return render_template('index.html', mapOfCity=mapOfCity, correctAnswer=correctAnswer)
 
 if __name__ == '__main__':
     app.secret_key = SECRET_KEY
