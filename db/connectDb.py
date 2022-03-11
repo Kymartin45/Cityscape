@@ -19,21 +19,40 @@ def getCitiesByPopulation(populationThreshold):
     cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     cur.execute(''' 
-                    SELECT city, country, lng, lat FROM worldwidecities
+                    SELECT city, country, lng, lat, city_id FROM worldwidecities
                     WHERE population >= %s
                     ORDER BY random() LIMIT 1;  
                 ''', [populationThreshold])
 
     city = cur.fetchall()
-    for row in city:
-        city, country, lng, lat = row['city'], row['country'], row['lng'], row['lat']
+    for col in city:
+        city, country, lng, lat, cityId = col['city'], col['country'], col['lng'], col['lat'], col['city_id']
     
-    cityInfo = CityInfo(city, (lng, lat), country)
+    cityInfo = CityInfo(city, (lng, lat), country, cityId)
         
     CONN.commit()
     CONN.close()
 
     return cityInfo
+
+def checkAnswer(cityId): 
+    cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    cur.execute('''
+                    SELECT country FROM worldwidecities
+                    WHERE city_id = %s;
+                    ''', [cityId])
+    
+    correctAns = cur.fetchall()
+    for col in correctAns:
+        country = col['country']
+
+    ans = country
+
+    CONN.commit()
+    CONN.close()
+
+    return ans
 
 if __name__ == '__main__':
     getCitiesByPopulation(POPULATION_THRESHHOLD)
