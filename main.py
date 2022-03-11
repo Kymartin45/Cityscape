@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request
 from dotenv import dotenv_values
 from db import connectDb
 import urllib.parse
@@ -15,10 +15,11 @@ SECRET_KEY = config.get('SECRET_KEY')
 POPULATION_THRESHHOLD = 1000000
 
 class CityInfo:
-    def __init__(self, name, coords, country):
+    def __init__(self, name, coords, country, cityId):
         self.name = name 
         self.coords = coords 
         self.country = country
+        self.cityId = cityId
 
 def getRandomCityName(populationThreshold):
     city = connectDb.getCitiesByPopulation(populationThreshold)
@@ -41,7 +42,6 @@ def getCityCoordinatesByName(cityName):
 
 def getRandomCity():
     cityInfo = getRandomCityName(POPULATION_THRESHHOLD)
-    print(f'{cityInfo.name} : {cityInfo.coords} : {cityInfo.country}')
     
     return cityInfo
 
@@ -66,14 +66,22 @@ def showMap(cityInfo):
 def index():
     city = getRandomCity()
     mapOfCity = showMap(city)
-    correctAnswer = city.country
-
-    if request.method == 'POST':
-        attempt = request.get_json()
-        userGuess = attempt.get('attempt')
-        return userGuess
+    correctAnswer = city.cityId
 
     return render_template('index.html', mapOfCity=mapOfCity, correctAnswer=correctAnswer)
+
+@app.route('/guess', methods=['POST'])
+def checkAnswer():
+    req = request.get_json()
+    res = make_response(jsonify(req), 200)
+    
+    if request.method == 'POST':
+        if str(req['attempt']).title() != connectDb.checkAnswer(req['cityId']):
+            print('Incorrect')
+        else:
+            print('Correct!')
+
+    return res
 
 if __name__ == '__main__':
     app.secret_key = SECRET_KEY
