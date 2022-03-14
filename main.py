@@ -73,13 +73,17 @@ def index():
 @app.route('/guess', methods=['POST'])
 def checkAnswer():
     req = request.get_json()
-    res = make_response(jsonify(req), 200)
     
     if request.method == 'POST':
         if str(req['attempt']).title() != connectDb.checkAnswer(req['cityId']):
-            print('Incorrect')
-        else:
-            print('Correct!')
+            isCorrect = req['isCorrect']['no']
+            res = make_response(jsonify(isCorrect), 200)
+            return res
+
+                
+        isCorrect = req['isCorrect']['yes']
+        res = make_response(jsonify(isCorrect), 200)
+        return res
 
     return res
 
