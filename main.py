@@ -1,33 +1,30 @@
-from flask import Flask, render_template
+from flask import Flask, jsonify, make_response, render_template, request
 from dotenv import dotenv_values
-from random import choice
+from db import connectDb
 import urllib.parse
 import requests
 import json
-import os
 
 app = Flask(__name__)
 
 config = dotenv_values('.env')
 OPENCAGEDATA_API_KEY = config.get('OPENCAGEDATA_API_KEY')
 GEOAPIFY_API_KEY = config.get('GEOAPIFY_API_KEY')
+SECRET_KEY = config.get('SECRET_KEY')
 
-POPULATION_THRESHHOLD = 400000
+POPULATION_THRESHHOLD = 1000000
 
-class City:
-    def __init__(self, name, coords):
+class CityInfo:
+    def __init__(self, name, coords, country, cityId):
         self.name = name 
         self.coords = coords 
+        self.country = country
+        self.cityId = cityId
 
 def getRandomCityName(populationThreshold):
-    with open('city_data/worldCities.json', 'r', encoding='UTF-8') as r:
-        cities = json.loads(r.read())
-        nonEmptyPopulation = list(filter(lambda city: (city['population'] != ""), cities))
-        filteredCities = list(filter(lambda city: (city['population'] > populationThreshold), nonEmptyPopulation))
-        randCity = choice(filteredCities)
-        
-        city = str(randCity['city']).replace('"', '')
-        return city 
+    city = connectDb.getCitiesByPopulation(populationThreshold)
+
+    return city
 
 def getCityCoordinatesByName(cityName):
     geoUrl = 'https://api.opencagedata.com/geocode/v1/json'
@@ -41,27 +38,23 @@ def getCityCoordinatesByName(cityName):
     lat = res['lat']
     lon = res['lng']
     
-    # with open('city_data/testData.json', 'w', encoding='UTF-8') as f:
-    #     json.dump(res, f, ensure_ascii=False, indent=4)
     return (lon, lat)
 
 def getRandomCity():
-    cityName = getRandomCityName(POPULATION_THRESHHOLD)
-    cityCoords = getCityCoordinatesByName(cityName)
-    city = City(cityName, cityCoords)
-    print(f'{city.name} : {city.coords}')
+    cityInfo = getRandomCityName(POPULATION_THRESHHOLD)
     
-    return city 
+    return cityInfo
 
-def showMap(city):
-    lon, lat = city.coords
+def showMap(cityInfo):
+    lon, lat = cityInfo.coords
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
         'style': 'osm-bright',
-        'width': '1920',  
-        'height': '1080',
+        'scaleFactor': 2,
+        'width': '800',  
+        'height': '600',
         'center': f'lonlat:{lon},{lat}',
-        'zoom': '6.5',
+        'zoom': '6',
         'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
         'apiKey': GEOAPIFY_API_KEY
     }    
@@ -71,19 +64,30 @@ def showMap(city):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    cityName = getRandomCityName(POPULATION_THRESHHOLD)
-    cityCoords = getCityCoordinatesByName(cityName)
-    city = City(cityName, cityCoords)
+    city = getRandomCity()
     mapOfCity = showMap(city)
+    correctAnswer = city.cityId
+
+    return render_template('index.html', mapOfCity=mapOfCity, correctAnswer=correctAnswer)
+
+@app.route('/guess', methods=['POST'])
+def checkAnswer():
+    req = request.get_json()
     
-    return render_template('index.html', mapOfCity=mapOfCity)
-    
+    if request.method == 'POST':
+        if str(req['attempt']).title() != connectDb.checkAnswer(req['cityId']):
+            isCorrect = req['isCorrect']['no']
+            res = make_response(jsonify(isCorrect), 200)
+            return res
+
+                
+        isCorrect = req['isCorrect']['yes']
+        res = make_response(jsonify(isCorrect), 200)
+        return res
+
+    return res
+
 if __name__ == '__main__':
-    app.secret_key = os.urandom(24)
+    app.secret_key = SECRET_KEY
     app.run(debug=True, port=8000)
-    # city1 = getRandomCity()
-    # city2 = getRandomCity()
-    # city3 = getRandomCity()
-    # city4 = getRandomCity()
-    # showMap(city1)
     
