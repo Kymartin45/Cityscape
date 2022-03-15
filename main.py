@@ -71,21 +71,19 @@ def index():
     return render_template('index.html', mapOfCity=mapOfCity, correctAnswer=correctAnswer)
 
 @app.route('/guess', methods=['POST'])
-def checkAnswer():
+def getCountryByCityID():
     req = request.get_json()
     
     if request.method == 'POST':
         if str(req['attempt']).title() != connectDb.checkAnswer(req['cityId']):
-            isCorrect = req['isCorrect']['no']
+            isCorrect = False
             res = make_response(jsonify(isCorrect), 200)
             return res
-
                 
-        isCorrect = req['isCorrect']['yes']
+        isCorrect = True
         res = make_response(jsonify(isCorrect), 200)
-        return res
 
-    return res
+        return res
 
 if __name__ == '__main__':
     app.secret_key = SECRET_KEY
