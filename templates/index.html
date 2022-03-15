@@ -10,26 +10,22 @@
         {% block script %}
         <script>
             window.onload = function refreshInputFields() {
-                document.getElementById('user-submit-guess').addEventListener('click', submitGuess);
+                document.getElementById('user-submit-guess').addEventListener('click', submitGuess, {once: true});
             }
 
             function submitGuess(e) {
                 e.preventDefault();
                 const attempt = document.getElementById('submit-guess').value;
-                const correctAnswer = '{{ correctAnswer }}';
+                const cityId = '{{ cityId }}';
 
                 const submission = {
-                    cityId: correctAnswer,
-                    attempt: attempt,
-                    isCorrect: {
-                        'yes': true,
-                        'no': false
-                    }
+                    cityId: cityId,
+                    attempt: attempt
                 }
 
-                if (attempt == null || attempt == '') {
+                if (!attempt) {
                     alert('Please guess a country');
-                    return false;
+                    return; 
                 }
 
                 fetch('/guess', {
@@ -43,11 +39,8 @@
                 .then(data => {
                     console.log({'correct': data})
                     
-                    if (data == true) {
-                        document.getElementById('my-result').textContent = 'You are correct!' 
-                    } else {
-                        document.getElementById('my-result').textContent = 'You are incorrect!' 
-                    }
+                    const modalText = `You are ${data ? 'correct' : 'incorrect'}!`
+                    document.getElementById('my-result').textContent = modalText;
                 })
                 .catch((err) => {
                     console.error(err);
@@ -85,6 +78,7 @@
                         
                     </span></strong></p>
                 </div>
+
                 <div class="modal-footer">
                   <button type="submit"  class="btn btn-secondary" onclick="refreshPage()">Play again</button>
                   <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
