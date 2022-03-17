@@ -11,6 +11,11 @@
         <script>
             window.onload = function refreshInputFields() {
                 document.getElementById('user-submit-guess').addEventListener('click', submitGuess, {once: true});
+
+                if (!localStorage.getItem('currentStreak') && !localStorage.getItem('maxStreak')) {
+                    localStorage.setItem('currentStreak', '0');
+                    localStorage.setItem('maxStreak', '0');
+                }
             }
 
             function submitGuess(e) {
@@ -20,7 +25,7 @@
 
                 const submission = {
                     cityId: cityId,
-                    attempt: attempt
+                    attempt: attempt,
                 }
 
                 if (!attempt) {
@@ -37,10 +42,25 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    console.log({'correct': data})
+                    console.log({'correct': data});
                     
-                    const modalText = `You are ${data ? 'correct' : 'incorrect'}!`
+                    const modalText = `You are ${data ? 'correct' : 'incorrect'}!`;
                     document.getElementById('my-result').textContent = modalText;
+
+                    /* temp */ 
+                    if (data == true) {
+                        /* if result true - increment currentStreak += 1 */
+                        let currentStreak = parseInt(localStorage.getItem('currentStreak'));
+                        let maxStreak = parseInt(localStorage.getItem('maxStreak'));
+                        localStorage.setItem('currentStreak', ++currentStreak);
+
+                        /* & check if currentStreak is > maxStreak; set the val of currentStreak to the val of maxStreak; else get currentStreak val*/
+                        parseInt(`${currentStreak > maxStreak ? localStorage.setItem('maxStreak', (currentStreak)) : console.log('Good job!')}`);
+                        return data;
+                    } else {
+                        localStorage.setItem('currentStreak', '0');
+                        console.log('Incorrect!');
+                    }
                 })
                 .catch((err) => {
                     console.error(err);
