@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, make_response, render_template, request
 from dotenv import dotenv_values
+from queries import query
 from db import connectDb
 import urllib.parse
 import requests
@@ -49,12 +50,12 @@ def showMap(cityInfo):
     lon, lat = cityInfo.coords
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
-        'style': 'osm-bright',
+        'style': 'klokantech-basic',
         'scaleFactor': 2,
         'width': '800',  
         'height': '600',
         'center': f'lonlat:{lon},{lat}',
-        'zoom': '6',
+        'zoom': '8',
         'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
         'apiKey': GEOAPIFY_API_KEY
     }    
@@ -66,24 +67,31 @@ def showMap(cityInfo):
 def index():
     city = getRandomCity()
     mapOfCity = showMap(city)
-    correctAnswer = city.cityId
+    cityId = city.cityId
 
-    return render_template('index.html', mapOfCity=mapOfCity, correctAnswer=correctAnswer)
+    return render_template('index.html', mapOfCity=mapOfCity, cityId=cityId, GEOAPIFY_API_KEY=GEOAPIFY_API_KEY)
 
-@app.route('/guess', methods=['POST'])
-def getCountryByCityID():
-    req = request.get_json()
+@app.route('/guess', endpoint='guess', methods=['POST'])
+@app.route('/stats', endpoint='stats', methods=['POST'])
+def getCountryByCityID(): 
+    cur = connectDb.CONN.cursor()
+    visitorId = request.get_json()
     
-    if request.method == 'POST':
-        if str(req['attempt']).title() != connectDb.checkAnswer(req['cityId']):
-            isCorrect = False
-            res = make_response(jsonify(isCorrect), 200)
-            return res
-                
-        isCorrect = True
-        res = make_response(jsonify(isCorrect), 200)
+    if request.endpoint == 'guess':
+        req = request.get_json()
+        if str(req['attempt']).title().lstrip().rstrip() != connectDb.checkAnswer(req['cityId']):
+            cur.execute(query['checkIfIdExists'], [json.dumps(visitorId)])
+            cur.execute(query['updateStatsIfIncorrect'], [json.dumps(visitorId)])
+            
+            return make_response(jsonify(False), 200)
 
-        return res
+        cur.execute(query['checkIfIdExists'], [json.dumps(visitorId)])
+        cur.execute(query['updateStatsIfCorrect'], [json.dumps(visitorId)])
+            
+        connectDb.CONN.commit()
+
+    return make_response(jsonify(True), 200)
+    
 
 if __name__ == '__main__':
     app.secret_key = SECRET_KEY
