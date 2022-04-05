@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, make_response, render_template, request
 from dotenv import dotenv_values
-from queries import query
+from db.queries import query
 from db import connectDb
 import urllib.parse
 import requests
@@ -72,26 +72,50 @@ def index():
     return render_template('index.html', mapOfCity=mapOfCity, cityId=cityId, GEOAPIFY_API_KEY=GEOAPIFY_API_KEY)
 
 @app.route('/guess', endpoint='guess', methods=['POST'])
-@app.route('/stats', endpoint='stats', methods=['POST'])
 def getCountryByCityID(): 
+    req = request.get_json()
+    guessObj = dict(req)
+
+    visitorId = guessObj['visitorId']
+
     cur = connectDb.CONN.cursor()
-    visitorId = request.get_json()
-    
-    if request.endpoint == 'guess':
-        req = request.get_json()
-        if str(req['attempt']).title().lstrip().rstrip() != connectDb.checkAnswer(req['cityId']):
-            cur.execute(query['checkIfIdExists'], [json.dumps(visitorId)])
-            cur.execute(query['updateStatsIfIncorrect'], [json.dumps(visitorId)])
-            
-            return make_response(jsonify(False), 200)
+    isCorrect =  str(req['attempt']).strip().title() == connectDb.checkAnswer(req['cityId'])
 
-        cur.execute(query['checkIfIdExists'], [json.dumps(visitorId)])
-        cur.execute(query['updateStatsIfCorrect'], [json.dumps(visitorId)])
-            
-        connectDb.CONN.commit()
+    cur.execute(query['checkIfIdExists'], [visitorId])
 
-    return make_response(jsonify(True), 200)
+    if not cur.fetchone()[0]:
+        cur.execute(query['createUser'])
+
+    if isCorrect:
+        cur.execute(query['updateStatsIfCorrect'], [visitorId])
     
+    cur.execute(query['updateStatsIfIncorrect'], [visitorId])
+
+    connectDb.CONN.commit()
+
+    return make_response(jsonify(isCorrect), 200)
+
+@app.route('/leaderboard', methods=['GET'])
+def getGlobalStats():
+    cur = connectDb.CONN.cursor()
+
+    cur.execute(query['showGlobalStats'])
+    globalUserStats = cur.fetchall()
+
+    allStats = []
+    for row in globalUserStats:
+        totalUserStats = {
+            'gamesPlayed': row[0],
+            'gamesWon': row[1],
+        }
+    
+        allStats.append(totalUserStats)
+        showUserStats = {
+            'totalPlayers': len(globalUserStats),
+            'leaderboard': allStats,
+        }
+
+    return make_response(jsonify(showUserStats), 200)
 
 if __name__ == '__main__':
     app.secret_key = SECRET_KEY
