@@ -7,6 +7,7 @@
         <title>Cityscape</title>
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
         <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
         <script>
             const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
@@ -18,7 +19,6 @@
             
         </script>
 
-        {% block script %}
         <script>
             function submitGuess(e) {
                 e.preventDefault();
@@ -31,9 +31,6 @@
                 
                 const visitorId = localStorage.getItem('visitorId');
                 const cityId = '{{ cityId }}';
-                
-                let gamesPlayed = parseInt(localStorage.getItem('gamesPlayed'));
-                localStorage.setItem('gamesPlayed', ++gamesPlayed);
 
                 const submission = {
                     cityId,
@@ -54,41 +51,27 @@
                     
                     const modalText = `You are ${data ? 'correct' : 'incorrect'}!`;
                     document.getElementById('my-result').textContent = modalText;
-
-                    /* temp */ 
-                    if (data) {
-                        /* if result true - increment currentStreak += 1 */
-                        let currentStreak = parseInt(localStorage.getItem('currentStreak'));
-                        let maxStreak = parseInt(localStorage.getItem('maxStreak'));
-                        let gamesWon = parseInt(localStorage.getItem('gamesWon'));
-                        
-                        localStorage.setItem('currentStreak', ++currentStreak);
-                        localStorage.setItem('gamesWon', ++gamesWon);
-            
-                        /* & check if currentStreak is > maxStreak; set the val of currentStreak to the val of maxStreak; else get currentStreak val*/
-                        parseInt(`${currentStreak > maxStreak ? localStorage.setItem('maxStreak', (currentStreak)) : console.log('Good job!')}`);
-            
-                        document.getElementById('current-streak').textContent = `Current streak: ${currentStreak}`;
-                        document.getElementById('max-streak').textContent = `Best streak: ${localStorage.getItem('maxStreak')}`; 
-
-                    } else {
-                        localStorage.setItem('currentStreak', '0');
-                        
-                        document.getElementById('current-streak').textContent = `Current streak: ${localStorage.getItem('currentStreak')}`;
-                        document.getElementById('max-streak').textContent = `Best streak: ${localStorage.getItem('maxStreak')}`; 
-                    }
                 })
                 .catch((err) => {
                     console.error(err);
                 })
             };
         </script>
-        {% endblock %}  
     </head>
 
     <body>
-        <div class="home-content">
-            <h1>Cityscape</h1>    
+        <div class="header">
+            <header class="app-header">
+                <div class="title">
+                    Cityscape
+                </div>
+                <div class="show-leaderboard">
+                    <a href="#" onclick="showGlobalLeaderboard()" data-toggle="modal" data-target="#global-leaderboard" class="leaderboard"><i class="fas fa-chart-bar"></i></a>
+                </div>
+            </header>  
+        </div>
+
+        <div class="show-map">
             <div class="my-map" id="user-attempt">
                 <img src="{{ mapOfCity }}" class="map-center">
             </div>
@@ -104,16 +87,13 @@
               <div class="modal-content">
                 <div class="modal-header text-center">
                   <h4 class="modal-title w-100" id="results-title">Results</h4>
+                  <hr class="results-modal-divider">
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
                 <div class="modal-body">
-                    <h5><strong id="current-streak"></strong></h5>
-                    <hr>
-                    <h5><strong id="max-streak"></strong></h5>
-                    <hr>
-                    <p><strong><span id="my-result"></span></strong></p>
+                    <p class="your-result"><strong><span id="my-result"></span></strong></p>
                 </div>
 
                 <div class="modal-footer">
@@ -121,6 +101,30 @@
                   <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="global-leaderboard" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="leaderboard-header text-center">
+                        <h4 class="modal-title w-100">Global Leaderboard</h4>
+                        <hr class="title-divider">
+                        <h5><strong>Total Players: <p id="total-player-count"></p></strong></h5>
+                            <div class="row">
+                                <div class="col-sm">
+                                    <h4>Games Played</h4>
+                                    <hr>
+                                    <strong><p id="games-played"></p></strong>
+                                </div>
+                                <div class="col-sm">
+                                    <h4>Games Won</h4>
+                                    <hr>
+                                    <strong><p id="games-won"></p></strong>
+                                </div>
+                            </div>
+                    </div>
+                </div>
             </div>
           </div>
 
