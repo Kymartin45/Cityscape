@@ -1,6 +1,3 @@
-import FingerprintJS from '@fingerprintjs/fingerprintjs-pro';
-import 'dotenv/config';
-
 window.onload = function refreshInputFields() {
     document.getElementById('user-submit-guess').addEventListener('click', submitGuess, {once: true});
 
