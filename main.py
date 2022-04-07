@@ -79,7 +79,7 @@ def getCountryByCityID():
     visitorId = guessObj['visitorId']
 
     cur = connectDb.CONN.cursor()
-    isCorrect =  str(req['attempt']).strip().title() == connectDb.checkAnswer(req['cityId'])
+    isCorrect =  str(req['attempt']).strip().lower() == connectDb.checkAnswer(req['cityId'])
 
     cur.execute(query['checkIfIdExists'], [visitorId])
 
