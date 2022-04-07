@@ -68,3 +68,7 @@ hr {
     height: 7px;
     background-color: rgba(0, 0, 0, 0.500);
 }
+
+.user-content {
+    padding: 20px;
+}
