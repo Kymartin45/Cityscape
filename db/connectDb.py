@@ -2,7 +2,6 @@ from main import POPULATION_THRESHHOLD, CityInfo
 from dotenv import dotenv_values
 import psycopg2.extras
 
-
 config = dotenv_values('.env')
 POSTGRESQL_PASSWORD = config.get('POSTGRESQL_PASSWORD')
 POSTGRES_HOST = config.get('POSTGRES_HOST')

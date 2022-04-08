@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, make_response, render_template, request
 from dotenv import dotenv_values
+from db.queries import query
 from db import connectDb
 import urllib.parse
 import requests
@@ -49,12 +50,12 @@ def showMap(cityInfo):
     lon, lat = cityInfo.coords
     url = 'https://maps.geoapify.com/v1/staticmap?'
     params = {
-        'style': 'osm-bright',
+        'style': 'klokantech-basic',
         'scaleFactor': 2,
         'width': '800',  
         'height': '600',
         'center': f'lonlat:{lon},{lat}',
-        'zoom': '6',
+        'zoom': '8',
         'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
         'apiKey': GEOAPIFY_API_KEY
     }    
@@ -66,26 +67,55 @@ def showMap(cityInfo):
 def index():
     city = getRandomCity()
     mapOfCity = showMap(city)
-    correctAnswer = city.cityId
+    cityId = city.cityId
 
-    return render_template('index.html', mapOfCity=mapOfCity, correctAnswer=correctAnswer)
+    return render_template('index.html', mapOfCity=mapOfCity, cityId=cityId, GEOAPIFY_API_KEY=GEOAPIFY_API_KEY)
 
-@app.route('/guess', methods=['POST'])
-def checkAnswer():
+@app.route('/guess', endpoint='guess', methods=['POST'])
+def getCountryByCityID(): 
     req = request.get_json()
+    guessObj = dict(req)
+
+    visitorId = guessObj['visitorId']
+
+    cur = connectDb.CONN.cursor()
+    isCorrect =  str(req['attempt']).strip().lower() == connectDb.checkAnswer(req['cityId'])
+
+    cur.execute(query['checkIfIdExists'], [visitorId])
+
+    if not cur.fetchone()[0]:
+        cur.execute(query['createUser'])
+
+    if isCorrect:
+        cur.execute(query['updateStatsIfCorrect'], [visitorId])
     
-    if request.method == 'POST':
-        if str(req['attempt']).title() != connectDb.checkAnswer(req['cityId']):
-            isCorrect = req['isCorrect']['no']
-            res = make_response(jsonify(isCorrect), 200)
-            return res
+    cur.execute(query['updateStatsIfIncorrect'], [visitorId])
 
-                
-        isCorrect = req['isCorrect']['yes']
-        res = make_response(jsonify(isCorrect), 200)
-        return res
+    connectDb.CONN.commit()
 
-    return res
+    return make_response(jsonify(isCorrect), 200)
+
+@app.route('/leaderboard', methods=['GET'])
+def getGlobalStats():
+    cur = connectDb.CONN.cursor()
+
+    cur.execute(query['showGlobalStats'])
+    globalUserStats = cur.fetchall()
+
+    allStats = []
+    for row in globalUserStats:
+        totalUserStats = {
+            'gamesPlayed': row[0],
+            'gamesWon': row[1],
+        }
+    
+        allStats.append(totalUserStats)
+        showUserStats = {
+            'totalPlayers': len(globalUserStats),
+            'leaderboard': allStats,
+        }
+
+    return make_response(jsonify(showUserStats), 200)
 
 if __name__ == '__main__':
     app.secret_key = SECRET_KEY

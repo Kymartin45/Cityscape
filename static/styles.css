@@ -1,0 +1,74 @@
+.header {
+    text-align: center;
+}
+
+.app-header {
+    display: flex;
+    padding: 0px 16px;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    border-bottom: 2px solid; 
+    flex-flow: row wrap;
+    height: 75px;
+}
+
+.title {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 100%;
+    letter-spacing: 0.01em;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+}
+
+.show-leaderboard {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    float: right;
+    flex-wrap: wrap;
+    width: 80px;
+    justify-content: flex-end;
+    font-size: 42px;
+    text-decoration: none;
+    background-color: none;
+}
+
+.leaderboard {
+    text-decoration: none;
+    color: black;
+}
+
+.show-map {
+    padding: 20px;
+}
+
+.title-divider {
+    float: center;
+    border: none;
+    height: 7px;
+    background-color: rgba(0, 0, 0, 0.500);
+}
+
+hr {
+    background-color: rgba(0, 0, 0, 0.500);
+}
+
+.your-result {
+    text-align: center;
+    font-size: 28px;
+}
+
+.results-modal-divider {
+    float: center;
+    border: none;
+    height: 7px;
+    background-color: rgba(0, 0, 0, 0.500);
+}
+
+.user-content {
+    padding: 20px;
+}
