@@ -30,7 +30,6 @@ def getCitiesByPopulation(populationThreshold):
     cityInfo = CityInfo(city, (lng, lat), country, cityId)
         
     CONN.commit()
-    CONN.close()
 
     return cityInfo
 
@@ -49,7 +48,6 @@ def checkAnswer(cityId):
     ans = country
 
     CONN.commit()
-    CONN.close()
 
     return ans
 
