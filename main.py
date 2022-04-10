@@ -3,8 +3,6 @@ from dotenv import dotenv_values
 from db.queries import query
 from db import connectDb
 import urllib.parse
-import requests
-import json
 
 app = Flask(__name__)
 
@@ -26,20 +24,6 @@ def getRandomCityName(populationThreshold):
     city = connectDb.getCitiesByPopulation(populationThreshold)
 
     return city
-
-def getCityCoordinatesByName(cityName):
-    geoUrl = 'https://api.opencagedata.com/geocode/v1/json'
-    params = {
-        'q': cityName,
-        'key': OPENCAGEDATA_API_KEY
-    }
-    r = requests.get(geoUrl, params=params)
-    res = json.loads(r.text)['results'][0]['geometry']
-    
-    lat = res['lat']
-    lon = res['lng']
-    
-    return (lon, lat)
 
 def getRandomCity():
     cityInfo = getRandomCityName(POPULATION_THRESHHOLD)
