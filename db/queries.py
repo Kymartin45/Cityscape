@@ -26,6 +26,8 @@ query = {
                     ''',
     'showGlobalStats': '''
                     SELECT games_played, games_won
-                    FROM userstats;
+                    FROM userstats
+                    ORDER BY games_won DESC
+                    LIMIT 50;
                     ''',
 }
