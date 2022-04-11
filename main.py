@@ -7,7 +7,6 @@ import urllib.parse
 app = Flask(__name__)
 
 config = dotenv_values('.env')
-OPENCAGEDATA_API_KEY = config.get('OPENCAGEDATA_API_KEY')
 GEOAPIFY_API_KEY = config.get('GEOAPIFY_API_KEY')
 SECRET_KEY = config.get('SECRET_KEY')
 
