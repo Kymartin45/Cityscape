@@ -35,8 +35,8 @@ def showMap(cityInfo):
     params = {
         'style': 'klokantech-basic',
         'scaleFactor': 2,
-        'width': '800',  
-        'height': '600',
+        'width': '750',  
+        'height': '550',
         'center': f'lonlat:{lon},{lat}',
         'zoom': '8',
         'marker': f'lonlat:{lon},{lat};color:#ff0000;size:medium',
