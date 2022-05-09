@@ -66,8 +66,8 @@ def getCountryByCityID():
 
     cur.execute(query['checkIfIdExists'], [visitorId])
 
-    if not cur.fetchone()[0]:
-        cur.execute(query['createUser'])
+    if cur.fetchone()[0] != visitorId:
+        cur.execute(query['createUser'], [visitorId])
 
     if isCorrect:
         cur.execute(query['updateStatsIfCorrect'], [visitorId])
