@@ -98,5 +98,17 @@ hr {
 }
 
 .user-content {
+    margin: auto;
     padding: 20px;
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.user-content > input {
+    width: fit-content;
+    font-size: 12pt;
+    border: 1px solid black;
 }
