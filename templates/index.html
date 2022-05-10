@@ -65,8 +65,11 @@
                 <div class="title">
                     Cityscape
                 </div>
+                <div class="how-to-play-icon">
+                    <a href="#" data-toggle="modal" data-target="#instructions"><i class="fas fa-question-circle" style="color: black;"></i></a>
+                </div>
                 <div class="show-leaderboard">
-                    <a href="#" onclick="showGlobalLeaderboard()" data-toggle="modal" data-target="#global-leaderboard" class="leaderboard"><i class="fas fa-chart-bar"></i></a>
+                    <a href="#" onclick="showGlobalLeaderboard()" data-toggle="modal" data-target="#global-leaderboard" class="leaderboard"><i class="fa fa-list-ol"></i></a>
                 </div>
             </header>  
         </div>
@@ -87,7 +90,7 @@
               <div class="modal-content">
                 <div class="modal-header text-center">
                   <h4 class="modal-title w-100" id="results-title">Results</h4>
-                  <hr class="results-modal-divider">
+                  <hr class="modal-divider">
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -127,6 +130,45 @@
                 </div>
             </div>
           </div>
+
+          <div class="modal fade" id="instructions" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="how-to-header text-center">
+                        <h4><strong>How To Play</strong>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </h4>
+                        <hr class="modal-divider">
+                    </div>
+                    <div class="how-to-body">
+                        <p>
+                            Welcome to <strong>Cityscape!</strong>
+                        </p>
+                        <p>
+                            Based on the city the map marker is pointing to, guess its respective country.
+                        </p>
+                        <p>
+                            You are given <strong>ONE ATTEMPT</strong> per map.
+                        </p>
+                        <p>
+                            Capitalization does not matter for the countries.
+                        </p>
+                        <hr>
+                        <div class="example-guesses">
+                            <p><strong>Example Attempts</strong></p>
+                            <div class="attempt-one">
+                                <p><strong>INCORRECT: </strong>U.S.</p>
+                                <p><strong>CORRECT: </strong>united states/United States</p>
+                                <hr>
+                                <p><strong>Play as much as your want!</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
 
         <script>
             const submitBtn = document.getElementById('user-submit-guess');
