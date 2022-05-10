@@ -63,6 +63,8 @@
 
 .my-map > img {
     position: relative;
+    max-width: 100%;
+    height: auto;
 }
 
 @keyframes loader {
@@ -90,7 +92,7 @@ hr {
     font-size: 28px;
 }
 
-.results-modal-divider {
+.modal-divider {
     float: center;
     border: none;
     height: 7px;
